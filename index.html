@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đề Ôn Tập Giữa Kì I - KHTN 9 (Vật Lí) - Trường THCS & THPT Hoà Thuận</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Confetti JS -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        /* Chế độ kích thước chữ động cho Tivi và thiết bị cá nhân */
+        .mode-standard {
+            --q-size: 1.15rem;
+            --opt-size: 1.05rem;
+            --exp-size: 1rem;
+            --badge-size: 0.875rem;
+        }
+        .mode-tv {
+            --q-size: 1.65rem;
+            --opt-size: 1.45rem;
+            --exp-size: 1.35rem;
+            --badge-size: 1.15rem;
+        }
+        .mode-tv-max {
+            --q-size: 2.1rem;
+            --opt-size: 1.85rem;
+            --exp-size: 1.65rem;
+            --badge-size: 1.35rem;
+        }
+
+        .dynamic-question {
+            font-size: var(--q-size);
+            line-height: 1.45;
+        }
+        .dynamic-option {
+            font-size: var(--opt-size);
+            line-height: 1.4;
+        }
+        .dynamic-explanation {
+            font-size: var(--exp-size);
+            line-height: 1.55;
+        }
+        .dynamic-badge {
+            font-size: var(--badge-size);
+        }
+
+        /* Hiệu ứng chuyển tiếp mượt mà */
+        .fade-in {
+            animation: fadeIn 0.35s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Định dạng công thức Vật lí đẹp mắt */
+        .phys-formula {
+            font-family: 'Inter', serif;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+        sub {
+            font-size: 0.72em;
+            bottom: -0.2em;
+        }
+        sup {
+            font-size: 0.72em;
+            top: -0.4em;
+        }
+    </style>
+</head>
+<body id="app-body" class="mode-tv bg-slate-100 min-h-screen text-slate-900 flex flex-col justify-between">
+
+    <!-- STICKY TOP CONTROL BAR (Thanh công cụ điều khiển tiện lợi cho Giáo viên & Học sinh) -->
+    <header class="w-full bg-white/95 backdrop-blur-md shadow-md border-b-2 border-indigo-100 sticky top-0 z-50 transition-all">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            
+            <!-- Logo & Tên trường -->
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-700 text-white p-2.5 rounded-2xl shadow-md flex items-center justify-center">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-indigo-700">TRƯỜNG THCS & THPT HOÀ THUẬN • TỔ KHTN</p>
+                    <h1 class="font-black text-base sm:text-xl text-slate-900 leading-tight">ĐỀ ÔN TẬP GIỮA KÌ I (2026 - 2027) - KHTN 9 (VẬT LÍ)</h1>
+                </div>
+            </div>
+
+            <!-- Cụm công cụ điều khiển -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                
+                <!-- Đồng hồ 20 phút -->
+                <div class="flex items-center bg-slate-100 border-2 border-slate-200 rounded-2xl px-3 py-1.5 space-x-2">
+                    <svg class="w-5 h-5 text-rose-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span id="timer-display" class="font-black text-lg sm:text-xl text-slate-900 tabular-nums">20:00</span>
+                    <button id="timer-toggle-btn" onclick="toggleTimer()" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition">
+                        Bắt đầu
+                    </button>
+                    <button onclick="resetTimer()" title="Đặt lại 20 phút" class="p-1 text-slate-500 hover:text-slate-800 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Chỉnh kích thước chữ chiếu Tivi -->
+                <div class="flex items-center bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-1">
+                    <button onclick="setFontSize('mode-standard')" id="btn-size-std" class="px-2.5 py-1 rounded-xl text-xs font-bold transition text-slate-700 hover:bg-white">
+                        Chuẩn
+                    </button>
+                    <button onclick="setFontSize('mode-tv')" id="btn-size-tv" class="px-2.5 py-1 rounded-xl text-xs font-bold transition bg-indigo-600 text-white shadow-sm">
+                        📺 Tivi Lớn
+                    </button>
+                    <button onclick="setFontSize('mode-tv-max')" id="btn-size-max" class="px-2.5 py-1 rounded-xl text-xs font-bold transition text-slate-700 hover:bg-white">
+                        🔍 Siêu To
+                    </button>
+                </div>
+
+                <!-- Nút Mở/Ẩn toàn bộ đáp án (Dành cho Giáo viên sửa bài) -->
+                <button id="toggle-all-exp-btn" onclick="toggleAllExplanations()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-sm transition flex items-center space-x-1.5">
+                    <span>💡 Hiện tất cả đáp án</span>
+                </button>
+
+                <!-- Nút Chấm điểm -->
+                <button onclick="gradeExam()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm rounded-2xl shadow-md transition flex items-center space-x-1.5">
+                    <span>✓ Chấm điểm</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-6xl w-full mx-auto px-4 py-6 sm:py-8 space-y-8 flex-grow">
+
+        <!-- BANNER THÔNG TIN ĐỀ & HỌC SINH -->
+        <section class="bg-white rounded-3xl shadow-md border-2 border-slate-200 p-6 sm:p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                <div class="lg:col-span-2 space-y-2">
+                    <div class="inline-flex items-center space-x-2 bg-indigo-100 text-indigo-800 font-extrabold px-3.5 py-1 rounded-full text-xs sm:text-sm">
+                        <span>Môn: KHTN 9 (Phân môn Vật lí)</span>
+                        <span>•</span>
+                        <span>Thời gian: 20 phút</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900">ĐỀ ÔN TẬP GIỮA HỌC KÌ I (NĂM HỌC 2026 - 2027)</h2>
+                    <p class="text-slate-600 font-medium text-sm sm:text-base">
+                        Chủ đề: Năng lượng cơ học (Động năng, Thế năng, Cơ năng) & Công - Công suất.
+                    </p>
+                </div>
+
+                <!-- Ô nhập Họ tên & Lớp -->
+                <div class="bg-slate-50 p-4 rounded-2xl border-2 border-slate-200 space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Họ và tên học sinh:</label>
+                        <input type="text" id="student-name" placeholder="Nhập họ và tên..." class="w-full px-3.5 py-2 rounded-xl border-2 border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-indigo-600 bg-white">
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="w-1/2">
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Lớp:</label>
+                            <input type="text" id="student-class" placeholder="VD: 9A1" class="w-full px-3.5 py-2 rounded-xl border-2 border-slate-300 font-bold text-slate-900 focus:outline-none focus:border-indigo-600 bg-white">
+                        </div>
+                        <div class="w-1/2 flex flex-col justify-end">
+                            <button onclick="resetAllQuiz()" class="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-sm transition">
+                                Làm lại từ đầu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng thông báo kết quả nhanh (Hiện ra khi bấm Chấm điểm) -->
+            <div id="score-banner" class="hidden mt-6 p-6 rounded-2xl bg-gradient-to-r from-indigo-600 to-emerald-600 text-white shadow-lg fade-in">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <p class="text-indigo-100 font-bold text-sm uppercase tracking-wider">KẾT QUẢ CHẤM ĐIỂM TRẮC NGHIỆM KHÁCH QUAN</p>
+                        <h3 id="score-student-info" class="text-2xl sm:text-3xl font-black">Học sinh: ---</h3>
+                        <p id="score-feedback" class="text-emerald-100 font-medium text-base sm:text-lg">Hãy kiểm tra chi tiết từng câu bên dưới!</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="bg-white/15 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/25 text-center">
+                            <span class="block text-xs font-bold uppercase text-indigo-100">Số câu đúng</span>
+                            <span id="score-correct-count" class="text-3xl sm:text-4xl font-black">0 / 10</span>
+                        </div>
+                        <div class="bg-white text-slate-900 px-6 py-3 rounded-2xl shadow-md text-center">
+                            <span class="block text-xs font-extrabold uppercase text-slate-500">Điểm Trắc Nghiệm</span>
+                            <span id="score-points" class="text-3xl sm:text-4xl font-black text-emerald-600">0,00 / 2,5đ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB CHUYỂN ĐỔI NHANH -->
+        <div class="flex flex-wrap gap-3 border-b-2 border-slate-200 pb-3">
+            <a href="#section-trac-nghiem" class="px-5 py-2.5 bg-indigo-700 text-white font-extrabold rounded-2xl shadow-sm hover:bg-indigo-800 transition text-sm sm:text-base">
+                I. TRẮC NGHIỆM KHÁCH QUAN (2,5 điểm - 10 câu)
+            </a>
+            <a href="#section-tu-luan" class="px-5 py-2.5 bg-white text-slate-800 border-2 border-slate-300 font-extrabold rounded-2xl hover:bg-slate-50 transition text-sm sm:text-base">
+                II. TỰ LUẬN (2,5 điểm - 2 bài tập)
+            </a>
+        </div>
+
+        <!-- PHẦN I: TRẮC NGHIỆM KHÁCH QUAN (2,5 ĐIỂM) -->
+        <section id="section-trac-nghiem" class="space-y-6">
+            <div class="bg-indigo-900 text-white p-5 sm:p-6 rounded-3xl shadow-md flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black">I. TRẮC NGHIỆM KHÁCH QUAN (2,5 điểm)</h2>
+                    <p class="text-indigo-200 text-sm sm:text-base font-medium mt-1">
+                        Khoanh tròn / Chọn vào chữ cái A, B, C hoặc D trước phương án trả lời đúng (Mỗi câu đúng được 0,25 điểm).
+                    </p>
+                </div>
+                <div class="bg-indigo-800 border border-indigo-600 px-4 py-2 rounded-2xl text-sm font-bold">
+                    Đã chọn: <span id="answered-counter" class="text-amber-300 font-black">0/10</span> câu
+                </div>
+            </div>
+
+            <!-- Danh sách 10 câu hỏi trắc nghiệm -->
+            <div id="mc-questions-list" class="space-y-6">
+                <!-- Được render bằng JavaScript -->
+            </div>
+        </section>
+
+        <!-- PHẦN II: TỰ LUẬN (2,5 ĐIỂM) -->
+        <section id="section-tu-luan" class="space-y-6 pt-6">
+            <div class="bg-emerald-900 text-white p-5 sm:p-6 rounded-3xl shadow-md flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black">II. TỰ LUẬN (2,5 điểm)</h2>
+                    <p class="text-emerald-200 text-sm sm:text-base font-medium mt-1">
+                        Học sinh có thể tự nháp hoặc nhập kết quả tính toán để kiểm tra nhanh trước khi bấm xem Hướng dẫn chấm.
+                    </p>
+                </div>
+                <button onclick="toggleAllEssaySolutions()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 text-white rounded-2xl font-bold text-sm transition">
+                    💡 Mở/Đóng lời giải Tự luận
+                </button>
+            </div>
+
+            <!-- CÂU 1 TỰ LUẬN (1,5 điểm) -->
+            <div class="bg-white rounded-3xl shadow-md border-2 border-slate-200 p-6 sm:p-8 space-y-6">
+                <div class="flex items-center justify-between border-b-2 border-slate-100 pb-4">
+                    <span class="bg-emerald-100 text-emerald-800 font-black px-4 py-1.5 rounded-2xl dynamic-badge">
+                        Câu 1 (1,5 điểm)
+                    </span>
+                    <span class="text-slate-500 font-bold text-sm">Chủ đề: Cơ năng - Thế năng trọng trường</span>
+                </div>
+
+                <div class="space-y-4 dynamic-question font-semibold text-slate-900">
+                    <p>
+                        <strong class="text-indigo-700">a) (0,5 điểm):</strong> Khi nào một vật được coi là có cơ năng? Lấy 1 ví dụ thực tế về một vật chỉ có thế năng trọng trường (không có động năng).
+                    </p>
+                    <p>
+                        <strong class="text-indigo-700">b) (1,0 điểm):</strong> Một chiếc đèn trang trí có khối lượng <span class="phys-formula">m = 1,5 kg</span> (trọng lượng <span class="phys-formula">P = 15 N</span>) được treo cố định ở độ cao <span class="phys-formula">h = 3 m</span> so với sàn nhà. Chọn mốc thế năng tại sàn nhà.
+                    </p>
+                    <ul class="list-disc list-inside pl-4 space-y-2 text-slate-800">
+                        <li>Tính thế năng trọng trường <span class="phys-formula">W<sub>t</sub></span> của đèn lúc này.</li>
+                        <li>Do đèn đang treo cố định (<span class="phys-formula">v = 0 m/s</span>) nên động năng của nó bằng <span class="phys-formula">0 J</span>. Hỏi cơ năng <span class="phys-formula">W</span> của đèn bằng bao nhiêu Jun (J)?</li>
+                    </ul>
+                </div>
+
+                <!-- Khu vực học sinh tự điền đáp số kiểm tra nhanh & ghi bài làm -->
+                <div class="bg-slate-50 p-5 rounded-2xl border-2 border-slate-200 space-y-4">
+                    <p class="font-bold text-slate-700 text-sm uppercase tracking-wider">✏️ Khu vực làm bài / Kiểm tra nhanh đáp số câu 1:</p>
+                    <textarea rows="3" placeholder="Nhập câu trả lời ý a) và trình bày phép tính của em tại đây..." class="w-full p-3.5 rounded-xl border-2 border-slate-300 font-medium text-slate-900 focus:outline-none focus:border-indigo-600 bg-white dynamic-option"></textarea>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end pt-2">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Nhập kết quả W<sub>t</sub> (J):</label>
+                            <input type="number" id="input-c1-wt" placeholder="VD: 45" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-300 font-bold text-lg text-slate-900 bg-white focus:border-indigo-600 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Nhập kết quả Cơ năng W (J):</label>
+                            <input type="number" id="input-c1-w" placeholder="VD: 45" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-300 font-bold text-lg text-slate-900 bg-white focus:border-indigo-600 focus:outline-none">
+                        </div>
+                        <div>
+                            <button onclick="checkEssay1()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl shadow transition">
+                                Kiểm tra đáp số Câu 1b
+                            </button>
+                        </div>
+                    </div>
+                    <div id="feedback-c1" class="hidden p-3.5 rounded-xl font-bold text-base"></div>
+                </div>
+
+                <!-- Nút Xem hướng dẫn chấm Câu 1 -->
+                <div>
+                    <button onclick="toggleElement('essay-sol-1', this)" class="px-5 py-3 bg-amber-100 hover:bg-amber-200 text-amber-900 border-2 border-amber-300 font-extrabold rounded-2xl transition flex items-center space-x-2 dynamic-badge">
+                        <span>💡 Xem Đáp án & Hướng dẫn chấm Câu 1 (1,5 điểm)</span>
+                    </button>
+
+                    <div id="essay-sol-1" class="essay-solution hidden mt-4 p-6 bg-emerald-50 border-2 border-emerald-300 rounded-2xl space-y-4 dynamic-explanation text-slate-900 fade-in">
+                        <h4 class="font-black text-emerald-900 uppercase border-b border-emerald-200 pb-2">HƯỚNG DẪN CHẤM CHI TIẾT CÂU 1 (1,5 ĐIỂM):</h4>
+                        <div class="space-y-3">
+                            <p><strong class="text-emerald-800">a) (0,5 điểm):</strong></p>
+                            <ul class="list-disc list-inside pl-3 space-y-1.5">
+                                <li>Nêu được: Vật có cơ năng khi <strong>vật đó có khả năng sinh công</strong> (thực hiện công cơ học). <span class="bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded-lg text-sm">(0,25 điểm)</span></li>
+                                <li>Lấy được 1 ví dụ đúng về vật chỉ có thế năng trọng trường (đang đứng yên ở độ cao so với mốc thế năng): <em>Quả bóng nằm yên trên nóc tủ, quyển sách đặt nằm yên trên mặt bàn cao, chiếc đèn chùm treo cố định trên trần nhà...</em> <span class="bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded-lg text-sm">(0,25 điểm)</span></li>
+                            </ul>
+
+                            <p class="pt-2"><strong class="text-emerald-800">b) (1,0 điểm):</strong></p>
+                            <ul class="list-disc list-inside pl-3 space-y-2">
+                                <li>
+                                    <strong>Thế năng trọng trường của đèn là:</strong><br>
+                                    <span class="inline-block mt-1 bg-white px-4 py-2 rounded-xl border border-emerald-300 phys-formula text-indigo-900">
+                                        W<sub>t</sub> = P . h = 15 × 3 = 45 (J)
+                                    </span>
+                                    <span class="text-slate-600 text-sm italic"> (Hoặc tính theo công thức: <span class="phys-formula">W<sub>t</sub> = 10 . m . h = 10 × 1,5 × 3 = 45 J</span>)</span>
+                                    <span class="bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded-lg text-sm ml-1">(0,5 điểm)</span>
+                                </li>
+                                <li>
+                                    <strong>Cơ năng của đèn là:</strong><br>
+                                    <span class="inline-block mt-1 bg-white px-4 py-2 rounded-xl border border-emerald-300 phys-formula text-indigo-900">
+                                        W = W<sub>t</sub> + W<sub>đ</sub> = 45 + 0 = 45 (J)
+                                    </span>
+                                    <span class="bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded-lg text-sm ml-1">(0,5 điểm)</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CÂU 2 TỰ LUẬN (1,0 điểm) -->
+            <div class="bg-white rounded-3xl shadow-md border-2 border-slate-200 p-6 sm:p-8 space-y-6">
+                <div class="flex items-center justify-between border-b-2 border-slate-100 pb-4">
+                    <span class="bg-emerald-100 text-emerald-800 font-black px-4 py-1.5 rounded-2xl dynamic-badge">
+                        Câu 2 (1,0 điểm)
+                    </span>
+                    <span class="text-slate-500 font-bold text-sm">Chủ đề: Công cơ học & Công suất</span>
+                </div>
+
+                <div class="space-y-4 dynamic-question font-semibold text-slate-900">
+                    <p>
+                        Một bạn học sinh dùng lực kéo không đổi <span class="phys-formula">F = 80 N</span> để kéo một chiếc xe đẩy hàng đi một quãng đường <span class="phys-formula">s = 10 m</span> trong thời gian <span class="phys-formula">t = 20 giây</span>.
+                    </p>
+                    <p><strong class="text-indigo-700">a) (0,5 điểm):</strong> Tính công cơ học <span class="phys-formula">A</span> mà bạn học sinh đã thực hiện.</p>
+                    <p><strong class="text-indigo-700">b) (0,5 điểm):</strong> Tính công suất <span class="phys-formula">P</span> của bạn học sinh đó.</p>
+                </div>
+
+                <!-- Khu vực học sinh tự điền đáp số kiểm tra nhanh -->
+                <div class="bg-slate-50 p-5 rounded-2xl border-2 border-slate-200 space-y-4">
+                    <p class="font-bold text-slate-700 text-sm uppercase tracking-wider">✏️ Khu vực làm bài / Kiểm tra nhanh đáp số câu 2:</p>
+                    <textarea rows="3" placeholder="Trình bày lời giải, công thức và phép tính của em tại đây..." class="w-full p-3.5 rounded-xl border-2 border-slate-300 font-medium text-slate-900 focus:outline-none focus:border-indigo-600 bg-white dynamic-option"></textarea>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end pt-2">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Nhập Công cơ học A (J):</label>
+                            <input type="number" id="input-c2-a" placeholder="VD: 800" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-300 font-bold text-lg text-slate-900 bg-white focus:border-indigo-600 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Nhập Công suất P (W):</label>
+                            <input type="number" id="input-c2-p" placeholder="VD: 40" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-300 font-bold text-lg text-slate-900 bg-white focus:border-indigo-600 focus:outline-none">
+                        </div>
+                        <div>
+                            <button onclick="checkEssay2()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl shadow transition">
+                                Kiểm tra đáp số Câu 2
+                            </button>
+                        </div>
+                    </div>
+                    <div id="feedback-c2" class="hidden p-3.5 rounded-xl font-bold text-base"></div>
+                </div>
+
+                <!-- Nút Xem hướng dẫn chấm Câu 2 -->
+                <div>
+                    <button onclick="toggleElement('essay-sol-2', this)" class="px-5 py-3 bg-amber-100 hover:bg-amber-200 text-amber-900 border-2 border-amber-300 font-extrabold rounded-2xl transition flex items-center space-x-2 dynamic-badge">
+                        <span>💡 Xem Đáp án & Hướng dẫn chấm Câu 2 (1,0 điểm)</span>
+                    </button>
+
+                    <div id="essay-sol-2" class="essay-solution hidden mt-4 p-6 bg-emerald-50 border-2 border-emerald-300 rounded-2xl space-y-4 dynamic-explanation text-slate-900 fade-in">
+                        <h4 class="font-black text-emerald-900 uppercase border-b border-emerald-200 pb-2">HƯỚNG DẪN CHẤM CHI TIẾT CÂU 2 (1,0 ĐIỂM):</h4>
+                        <div class="space-y-3">
+                            <p><strong class="text-emerald-800">a) (0,5 điểm) - Tính công cơ học A:</strong></p>
+                            <div class="pl-3">
+                                <p>Công cơ học mà bạn học sinh đã thực hiện là:</p>
+                                <span class="inline-block mt-1 bg-white px-4 py-2 rounded-xl border border-emerald-300 phys-formula text-indigo-900">
+                                    A = F . s = 80 × 10 = 800 (J)
+                                </span>
+                                <span class="bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded-lg text-sm ml-1">(0,5 điểm)</span>
+                            </div>
+
+                            <p class="pt-2"><strong class="text-emerald-800">b) (0,5 điểm) - Tính công suất P:</strong></p>
+                            <div class="pl-3">
+                                <p>Công suất của bạn học sinh đó là:</p>
+                                <span class="inline-block mt-1 bg-white px-4 py-2 rounded-xl border border-emerald-300 phys-formula text-indigo-900">
+                                    P = A / t = 800 / 20 = 40 (W)
+                                </span>
+                                <span class="bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded-lg text-sm ml-1">(0,5 điểm)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full bg-white border-t-2 border-slate-200 py-6 px-4 text-center text-slate-500 font-medium text-sm mt-12">
+        <p class="font-bold text-slate-700">TRƯỜNG THCS & THPT HOÀ THUẬN - TỔ KHOA HỌC TỰ NHIÊN</p>
+        <p class="mt-1">Hệ thống Ôn tập Trực tuyến Môn KHTN 9 (Phân môn Vật lí) • Năm học 2026 - 2027</p>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Danh sách 10 câu hỏi trắc nghiệm từ đề ôn tập của trường THCS & THPT Hoà Thuận
+        const questionsData = [
+            {
+                id: 1,
+                question: "Dạng năng lượng mà một vật có được khi nó đang chuyển động được gọi là gì?",
+                options: [
+                    "Thế năng trọng trường.",
+                    "Động năng.",
+                    "Quang năng.",
+                    "Hóa năng."
+                ],
+                correct: 1, // B
+                explanation: "Động năng là dạng năng lượng mà một vật có được do nó đang chuyển động. Vật có khối lượng càng lớn và chuyển động càng nhanh thì động năng càng lớn."
+            },
+            {
+                id: 2,
+                question: "Cơ năng của một vật được xác định bằng tổng của hai dạng năng lượng nào sau đây?",
+                options: [
+                    "Động năng và nhiệt năng.",
+                    "Động năng và thế năng.",
+                    "Thế năng và quang năng.",
+                    "Nhiệt năng và quang năng."
+                ],
+                correct: 1, // B
+                explanation: "Tổng động năng và thế năng của vật được gọi là cơ năng của vật: <span class='phys-formula'>W = W<sub>đ</sub> + W<sub>t</sub></span>."
+            },
+            {
+                id: 3,
+                question: "Trong hệ đơn vị đo lường hợp pháp của nước ta, đơn vị đo của cơ năng là",
+                options: [
+                    "Niutơn (N).",
+                    "Jun (J).",
+                    "Oát (W).",
+                    "Mét (m)."
+                ],
+                correct: 1, // B
+                explanation: "Động năng, thế năng và cơ năng đều là các dạng năng lượng nên có đơn vị đo chuẩn là <strong>Jun (kí hiệu là J)</strong>. (Niutơn là đơn vị lực, Oát là đơn vị công suất, Mét là đơn vị độ dài)."
+            },
+            {
+                id: 4,
+                question: "Biểu thức nào sau đây dùng để tính thế năng trọng trường của một vật có khối lượng <span class='phys-formula'>m</span> ở độ cao <span class='phys-formula'>h</span> so với mặt đất (lấy <span class='phys-formula'>g = 10 m/s<sup>2</sup></span>)?",
+                options: [
+                    "<span class='phys-formula'>W<sub>t</sub> = m . h</span>",
+                    "<span class='phys-formula'>W<sub>t</sub> = 10 . m . h</span>",
+                    "<span class='phys-formula'>W<sub>t</sub> = m / h</span>",
+                    "<span class='phys-formula'>W<sub>t</sub> = F . h</span>"
+                ],
+                correct: 1, // B
+                explanation: "Thế năng trọng trường được xác định bởi biểu thức <span class='phys-formula'>W<sub>t</sub> = P . h = 10 . m . h</span> (trong đó <span class='phys-formula'>P = 10 . m</span> là trọng lượng của vật, <span class='phys-formula'>m</span> tính bằng kg, <span class='phys-formula'>h</span> tính bằng m)."
+            },
+            {
+                id: 5,
+                question: "Động năng của một vật có khối lượng <span class='phys-formula'>m</span> đang chuyển động với tốc độ <span class='phys-formula'>v</span> được tính theo công thức nào sau đây?",
+                options: [
+                    "<span class='phys-formula'>W<sub>đ</sub> = m . v</span>",
+                    "<span class='phys-formula'>W<sub>đ</sub> = 2 . m . v<sup>2</sup></span>",
+                    "<span class='phys-formula'>W<sub>đ</sub> = <span style='font-size:1.05em'>½</span> . m . v<sup>2</sup></span>",
+                    "<span class='phys-formula'>W<sub>đ</sub> = m . v<sup>2</sup></span>"
+                ],
+                correct: 2, // C
+                explanation: "Động năng của vật có khối lượng <span class='phys-formula'>m</span> (kg) chuyển động với tốc độ <span class='phys-formula'>v</span> (m/s) được tính theo công thức: <span class='phys-formula'>W<sub>đ</sub> = ½ . m . v<sup>2</sup></span>."
+            },
+            {
+                id: 6,
+                question: "Khi một vật được ném thẳng đứng lên cao (bỏ qua sức cản không khí), trong quá trình vật đang đi lên thì",
+                options: [
+                    "động năng tăng dần, thế năng giảm dần.",
+                    "động năng giảm dần, thế năng tăng dần.",
+                    "động năng và thế năng đều tăng dần.",
+                    "động năng và thế năng đều giảm dần."
+                ],
+                correct: 1, // B
+                explanation: "Trong quá trình vật đang đi lên: độ cao <span class='phys-formula'>h</span> tăng dần nên <strong>thế năng tăng dần</strong>; đồng thời tốc độ <span class='phys-formula'>v</span> của vật giảm dần nên <strong>động năng giảm dần</strong> (động năng đã chuyển hóa dần thành thế năng)."
+            },
+            {
+                id: 7,
+                question: "Đại lượng nào sau đây đặc trưng cho tốc độ thực hiện công nhanh hay chậm?",
+                options: [
+                    "Động năng.",
+                    "Thế năng.",
+                    "Công suất.",
+                    "Cơ năng."
+                ],
+                correct: 2, // C
+                explanation: "<strong>Công suất</strong> là đại lượng đặc trưng cho tốc độ thực hiện công nhanh hay chậm, được xác định bằng công thực hiện được trong một đơn vị thời gian (<span class='phys-formula'>P = A / t</span>)."
+            },
+            {
+                id: 8,
+                question: "Trong hệ đơn vị đo lường hợp pháp của nước ta, đơn vị đo chuẩn của công suất là",
+                options: [
+                    "Jun (J).",
+                    "Niutơn (N).",
+                    "Oát (W).",
+                    "Ki-lô-gam (kg)."
+                ],
+                correct: 2, // C
+                explanation: "Đơn vị đo chuẩn của công suất là <strong>Oát (kí hiệu là W)</strong>, với <span class='phys-formula'>1 W = 1 J/s</span>."
+            },
+            {
+                id: 9,
+                question: "Biểu thức tính công cơ học <span class='phys-formula'>A</span> khi lực <span class='phys-formula'>F</span> không đổi làm vật dịch chuyển một quãng đường <span class='phys-formula'>s</span> theo hướng của lực là",
+                options: [
+                    "<span class='phys-formula'>A = F . s</span>",
+                    "<span class='phys-formula'>A = F / s</span>",
+                    "<span class='phys-formula'>A = F + s</span>",
+                    "<span class='phys-formula'>A = s / F</span>"
+                ],
+                correct: 0, // A
+                explanation: "Công cơ học của một lực không đổi <span class='phys-formula'>F</span> làm vật dịch chuyển một quãng đường <span class='phys-formula'>s</span> theo hướng của lực được tính bằng tích của lực và quãng đường dịch chuyển: <span class='phys-formula'>A = F . s</span>."
+            },
+            {
+                id: 10,
+                question: "Trường hợp nào sau đây <strong>KHÔNG</strong> sinh công cơ học?",
+                options: [
+                    "Người kéo xe chuyển động trên đường.",
+                    "Cần cẩu nâng vật lên cao.",
+                    "Người đẩy bức tường nhưng tường không hề dịch chuyển.",
+                    "Gió thổi làm thuyền buồm di chuyển trên mặt nước."
+                ],
+                correct: 2, // C
+                explanation: "Điều kiện để có công cơ học là phải có lực tác dụng vào vật và làm vật dịch chuyển một quãng đường (<span class='phys-formula'>s &neq; 0</span>). Khi người đẩy bức tường nhưng tường không dịch chuyển (<span class='phys-formula'>s = 0</span>) thì công cơ học <span class='phys-formula'>A = F . 0 = 0</span> (không sinh công)."
+            }
+        ];
+
+        const letterLabels = ['A', 'B', 'C', 'D'];
+        let userSelections = new Array(questionsData.length).fill(null);
+        let allExplanationsVisible = false;
+        let isExamGraded = false;
+
+        // Quản lý đồng hồ 20 phút
+        let timeRemaining = 20 * 60;
+        let timerInterval = null;
+        let isTimerRunning = false;
+
+        // Khởi tạo giao diện câu hỏi trắc nghiệm
+        function renderMCQuestions() {
+            const container = document.getElementById('mc-questions-list');
+            container.innerHTML = '';
+
+            questionsData.forEach((q, qIndex) => {
+                const selectedIdx = userSelections[qIndex];
+                const correctLetter = letterLabels[q.correct];
+
+                let optionsHtml = '';
+                q.options.forEach((optText, optIndex) => {
+                    const isSelected = selectedIdx === optIndex;
+                    const isCorrectOption = optIndex === q.correct;
+
+                    // Định dạng màu sắc nút phương án
+                    let cardStyle = "bg-slate-50 border-slate-300 text-slate-900 hover:bg-indigo-50/70 hover:border-indigo-400";
+                    let badgeStyle = "bg-white border-slate-400 text-slate-800";
+                    let statusTag = "";
+
+                    if (isExamGraded) {
+                        if (isCorrectOption) {
+                            cardStyle = "bg-emerald-100 border-emerald-600 text-emerald-950 ring-2 ring-emerald-500";
+                            badgeStyle = "bg-emerald-600 border-emerald-600 text-white";
+                            statusTag = `<span class="ml-auto px-2.5 py-0.5 bg-emerald-600 text-white text-xs font-black rounded-lg">ĐÁP ÁN ĐÚNG</span>`;
+                        } else if (isSelected && !isCorrectOption) {
+                            cardStyle = "bg-rose-100 border-rose-500 text-rose-950";
+                            badgeStyle = "bg-rose-600 border-rose-600 text-white";
+                            statusTag = `<span class="ml-auto px-2.5 py-0.5 bg-rose-600 text-white text-xs font-black rounded-lg">CHỌN SAI</span>`;
+                        }
+                    } else if (isSelected) {
+                        cardStyle = "bg-indigo-100 border-indigo-600 text-indigo-950 ring-2 ring-indigo-500 shadow-sm";
+                        badgeStyle = "bg-indigo-600 border-indigo-600 text-white";
+                    }
+
+                    optionsHtml += `
+                        <button type="button" onclick="selectOption(${qIndex}, ${optIndex})"
+                            class="w-full text-left p-4 sm:p-5 rounded-2xl border-2 transition-all flex items-center gap-4 dynamic-option font-semibold ${cardStyle}">
+                            <span class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl border-2 flex-shrink-0 flex items-center justify-center font-black text-lg ${badgeStyle}">
+                                ${letterLabels[optIndex]}
+                            </span>
+                            <span class="flex-grow">${optText}</span>
+                            ${statusTag}
+                        </button>
+                    `;
+                });
+
+                // Trạng thái đúng/sai của câu hỏi sau khi bấm Chấm điểm
+                let questionStatusBadge = `<span class="text-slate-500 font-bold text-sm">0,25 điểm</span>`;
+                if (isExamGraded) {
+                    if (selectedIdx === q.correct) {
+                        questionStatusBadge = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 font-black px-3 py-1 rounded-xl text-sm">✓ Chính xác (+0,25đ)</span>`;
+                    } else if (selectedIdx === null) {
+                        questionStatusBadge = `<span class="bg-amber-100 text-amber-800 border border-amber-300 font-black px-3 py-1 rounded-xl text-sm">⚠ Chưa chọn (0đ)</span>`;
+                    } else {
+                        questionStatusBadge = `<span class="bg-rose-100 text-rose-800 border border-rose-300 font-black px-3 py-1 rounded-xl text-sm">✗ Chưa đúng (0đ)</span>`;
+                    }
+                }
+
+                container.innerHTML += `
+                    <div id="question-card-${q.id}" class="bg-white rounded-3xl shadow-md border-2 border-slate-200 p-6 sm:p-8 space-y-5 transition-all">
+                        <div class="flex flex-wrap items-center justify-between gap-2 border-b-2 border-slate-100 pb-3">
+                            <span class="bg-indigo-100 text-indigo-800 font-black px-4 py-1.5 rounded-2xl dynamic-badge">
+                                Câu ${q.id}
+                            </span>
+                            ${questionStatusBadge}
+                        </div>
+
+                        <h3 class="dynamic-question font-bold text-slate-900">
+                            ${q.question}
+                        </h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+                            ${optionsHtml}
+                        </div>
+
+                        <!-- Mục click xem Đáp án và Hướng dẫn giải thích từng câu -->
+                        <div class="pt-2 border-t border-slate-100 flex flex-col items-start">
+                            <button type="button" onclick="toggleElement('exp-box-${q.id}', this)"
+                                class="px-4 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border-2 border-amber-300 font-extrabold rounded-2xl transition flex items-center space-x-2 dynamic-badge">
+                                <span>💡 Xem đáp án & Hướng dẫn giải Câu ${q.id}</span>
+                            </button>
+
+                            <div id="exp-box-${q.id}" class="mc-explanation ${allExplanationsVisible || isExamGraded ? '' : 'hidden'} w-full mt-4 p-5 bg-emerald-50 border-2 border-emerald-300 rounded-2xl dynamic-explanation text-slate-900 space-y-2 fade-in">
+                                <div class="flex items-center space-x-2">
+                                    <span class="px-3 py-1 bg-emerald-600 text-white font-black rounded-xl text-sm uppercase">
+                                        Đáp án đúng: ${correctLetter}
+                                    </span>
+                                    <span class="font-extrabold text-emerald-950">${q.options[q.correct]}</span>
+                                </div>
+                                <p class="text-slate-800 pt-1">
+                                    <strong class="text-emerald-900">📚 Hướng dẫn & Giải thích:</strong> ${q.explanation}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            updateAnsweredCounter();
+        }
+
+        // Xử lý khi học sinh chọn đáp án A, B, C, D
+        function selectOption(qIndex, optIndex) {
+            userSelections[qIndex] = optIndex;
+            renderMCQuestions();
+        }
+
+        // Cập nhật bộ đếm số câu đã làm
+        function updateAnsweredCounter() {
+            const count = userSelections.filter(val => val !== null).length;
+            document.getElementById('answered-counter').innerText = `${count}/${questionsData.length}`;
+        }
+
+        // Mở/Đóng một phần tử giải thích bất kỳ
+        function toggleElement(elementId, btnElement) {
+            const target = document.getElementById(elementId);
+            if (!target) return;
+            target.classList.toggle('hidden');
+        }
+
+        // Mở/Đóng tất cả đáp án cùng lúc (Cho giáo viên chiếu Tivi sửa bài)
+        function toggleAllExplanations() {
+            allExplanationsVisible = !allExplanationsVisible;
+            const expBoxes = document.querySelectorAll('.mc-explanation, .essay-solution');
+            expBoxes.forEach(box => {
+                if (allExplanationsVisible) {
+                    box.classList.remove('hidden');
+                } else {
+                    box.classList.add('hidden');
+                }
+            });
+
+            const btn = document.getElementById('toggle-all-exp-btn');
+            if (allExplanationsVisible) {
+                btn.innerHTML = `<span>🙈 Ẩn tất cả đáp án</span>`;
+                btn.classList.replace('bg-amber-500', 'bg-slate-700');
+                btn.classList.replace('hover:bg-amber-600', 'hover:bg-slate-800');
+            } else {
+                btn.innerHTML = `<span>💡 Hiện tất cả đáp án</span>`;
+                btn.classList.replace('bg-slate-700', 'bg-amber-500');
+                btn.classList.replace('hover:bg-slate-800', 'hover:bg-amber-600');
+            }
+        }
+
+        function toggleAllEssaySolutions() {
+            const essayBoxes = document.querySelectorAll('.essay-solution');
+            const anyHidden = Array.from(essayBoxes).some(b => b.classList.contains('hidden'));
+            essayBoxes.forEach(b => {
+                if (anyHidden) b.classList.remove('hidden');
+                else b.classList.add('hidden');
+            });
+        }
+
+        // Chỉnh kích thước chữ chiếu Tivi
+        function setFontSize(mode) {
+            const body = document.getElementById('app-body');
+            body.classList.remove('mode-standard', 'mode-tv', 'mode-tv-max');
+            body.classList.add(mode);
+
+            const btnStd = document.getElementById('btn-size-std');
+            const btnTv = document.getElementById('btn-size-tv');
+            const btnMax = document.getElementById('btn-size-max');
+
+            [btnStd, btnTv, btnMax].forEach(b => {
+                b.className = "px-2.5 py-1 rounded-xl text-xs font-bold transition text-slate-700 hover:bg-white";
+            });
+
+            const activeClass = "px-2.5 py-1 rounded-xl text-xs font-bold transition bg-indigo-600 text-white shadow-sm";
+            if (mode === 'mode-standard') btnStd.className = activeClass;
+            if (mode === 'mode-tv') btnTv.className = activeClass;
+            if (mode === 'mode-tv-max') btnMax.className = activeClass;
+        }
+
+        // Chấm điểm toàn bài trắc nghiệm
+        function gradeExam() {
+            isExamGraded = true;
+            let correctCount = 0;
+
+            questionsData.forEach((q, idx) => {
+                if (userSelections[idx] === q.correct) {
+                    correctCount++;
+                }
+            });
+
+            const totalPoints = (correctCount * 0.25).toFixed(2).replace('.', ',');
+            const nameVal = document.getElementById('student-name').value.trim() || 'Học sinh ôn tập';
+            const classVal = document.getElementById('student-class').value.trim();
+
+            document.getElementById('score-student-info').innerText = classVal ? `${nameVal} (Lớp: ${classVal})` : nameVal;
+            document.getElementById('score-correct-count').innerText = `${correctCount} / 10`;
+            document.getElementById('score-points').innerText = `${totalPoints} / 2,5đ`;
+
+            const feedbackEl = document.getElementById('score-feedback');
+            if (correctCount === 10) {
+                feedbackEl.innerText = "🎉 Xuất sắc! Em đã nắm vững toàn bộ kiến thức trắc nghiệm Vật lí 9!";
+                confetti({ particleCount: 130, spread: 80, origin: { y: 0.6 } });
+            } else if (correctCount >= 8) {
+                feedbackEl.innerText = "👍 Rất tốt! Em chỉ sai sót nhỏ, hãy xem lại lời giải chi tiết bên dưới nhé.";
+                confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+            } else if (correctCount >= 5) {
+                feedbackEl.innerText = "💪 Khá tốt! Em hãy đọc kỹ phần giải thích ở các câu làm sai để nhớ công thức nhé.";
+            } else {
+                feedbackEl.innerText = "📖 Em cần ôn lại kỹ các công thức Động năng, Thế năng, Cơ năng và Công - Công suất bên dưới nhé!";
+            }
+
+            document.getElementById('score-banner').classList.remove('hidden');
+            renderMCQuestions();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Kiểm tra đáp số Tự luận Câu 1b
+        function checkEssay1() {
+            const wtVal = parseFloat(document.getElementById('input-c1-wt').value);
+            const wVal = parseFloat(document.getElementById('input-c1-w').value);
+            const fb = document.getElementById('feedback-c1');
+            fb.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-900', 'bg-rose-100', 'text-rose-900');
+
+            if (wtVal === 45 && wVal === 45) {
+                fb.classList.add('bg-emerald-100', 'text-emerald-900');
+                fb.innerHTML = `✓ <strong>Chính xác!</strong> Thế năng trọng trường W<sub>t</sub> = 45 J và Cơ năng của đèn W = 45 J. Em hãy mở hướng dẫn chấm để xem cách trình bày đạt điểm tối đa nhé!`;
+            } else {
+                fb.classList.add('bg-rose-100', 'text-rose-900');
+                fb.innerHTML = `✗ <strong>Chưa chính xác!</strong> Gợi ý: Áp dụng công thức W<sub>t</sub> = P . h = 15 × 3 và Cơ năng W = W<sub>t</sub> + W<sub>đ</sub>. Hãy tính lại hoặc bấm xem hướng dẫn chấm bên dưới nhé!`;
+            }
+        }
+
+        // Kiểm tra đáp số Tự luận Câu 2
+        function checkEssay2() {
+            const aVal = parseFloat(document.getElementById('input-c2-a').value);
+            const pVal = parseFloat(document.getElementById('input-c2-p').value);
+            const fb = document.getElementById('feedback-c2');
+            fb.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-900', 'bg-rose-100', 'text-rose-900');
+
+            if (aVal === 800 && pVal === 40) {
+                fb.classList.add('bg-emerald-100', 'text-emerald-900');
+                fb.innerHTML = `✓ <strong>Chính xác!</strong> Công cơ học A = 800 J và Công suất P = 40 W. Em làm bài rất tốt!`;
+            } else {
+                fb.classList.add('bg-rose-100', 'text-rose-900');
+                fb.innerHTML = `✗ <strong>Chưa chính xác!</strong> Gợi ý: Công cơ học A = F . s = 80 × 10 (J) và Công suất P = A / t (W). Em hãy kiểm tra lại phép tính nhé!`;
+            }
+        }
+
+        // Đặt lại toàn bộ bài tập từ đầu
+        function resetAllQuiz() {
+            userSelections.fill(null);
+            isExamGraded = false;
+            allExplanationsVisible = false;
+            document.getElementById('score-banner').classList.add('hidden');
+            document.getElementById('input-c1-wt').value = '';
+            document.getElementById('input-c1-w').value = '';
+            document.getElementById('input-c2-a').value = '';
+            document.getElementById('input-c2-p').value = '';
+            document.getElementById('feedback-c1').classList.add('hidden');
+            document.getElementById('feedback-c2').classList.add('hidden');
+
+            const btn = document.getElementById('toggle-all-exp-btn');
+            btn.innerHTML = `<span>💡 Hiện tất cả đáp án</span>`;
+            btn.className = "px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-sm transition flex items-center space-x-1.5";
+
+            document.querySelectorAll('.essay-solution').forEach(b => b.classList.add('hidden'));
+            renderMCQuestions();
+            resetTimer();
+        }
+
+        // Quản lý đồng hồ đếm ngược 20 phút
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+            const secs = (timeRemaining % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').innerText = `${mins}:${secs}`;
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('timer-toggle-btn');
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                btn.innerText = "Tiếp tục";
+                btn.classList.replace('bg-amber-600', 'bg-indigo-600');
+            } else {
+                isTimerRunning = true;
+                btn.innerText = "Tạm dừng";
+                btn.classList.replace('bg-indigo-600', 'bg-amber-600');
+                timerInterval = setInterval(() => {
+                    if (timeRemaining > 0) {
+                        timeRemaining--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        btn.innerText = "Hết giờ";
+                        gradeExam();
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timeRemaining = 20 * 60;
+            updateTimerDisplay();
+            const btn = document.getElementById('timer-toggle-btn');
+            btn.innerText = "Bắt đầu";
+            btn.className = "px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition";
+        }
+
+        // Khởi chạy ứng dụng khi tải trang
+        window.onload = function() {
+            renderMCQuestions();
+            updateTimerDisplay();
+        };
+    </script>
+</body>
+</html>
